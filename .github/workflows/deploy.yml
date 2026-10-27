@@ -10,12 +10,28 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kiem tra du 3 file
+        run: |
+          for f in index.html style.css script.js; do
+            if [ ! -f "$f" ]; then
+              echo "Thieu file $f"
+              exit 1
+            fi
+          done
+      - name: Kiem tra the title
+        run: |
+          if ! grep -q "<title>" index.html; then
+            echo "index.html thieu the title"
+            exit 1
+          fi
+
   deploy:
+    needs: check
     runs-on: ubuntu-latest
     environment:
       name: github-pages
